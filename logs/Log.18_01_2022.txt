@@ -1,0 +1,40 @@
+
+[20:02:39] FATAL: 	Camera capture operation suddenly crushed...
+			Reason: all the input array dimensions for the concatenation axis must match exactly, but along dimension 0, the array at index 0 has size 200 and the array at index 1 has size 500
+			Error thrown inside 'F:\Code\python\ImageFeatureDetection\webcam.py' on line 150
+
+[20:04:11] FATAL: 	Camera capture operation suddenly crushed...
+			Reason: all the input arrays must have same number of dimensions, but the array at index 0 has 3 dimension(s) and the array at index 1 has 2 dimension(s)
+			Error thrown inside 'F:\Code\python\ImageFeatureDetection\webcam.py' on line 150
+
+[20:09:40] FATAL: 	Camera capture operation suddenly crushed...
+			Reason: all the input array dimensions for the concatenation axis must match exactly, but along dimension 0, the array at index 0 has size 500 and the array at index 1 has size 940
+			Error thrown inside 'F:\Code\python\ImageFeatureDetection\webcam.py' on line 155
+
+[22:49:07] FATAL: 	Camera capture operation suddenly crushed...
+			Reason: all the input array dimensions for the concatenation axis must match exactly, but along dimension 2, the array at index 0 has size 3 and the array at index 1 has size 1
+			Error thrown inside 'F:\Code\python\ImageFeatureDetection\webcam.py' on line 155
+
+[22:49:34] FATAL: 	Camera capture operation suddenly crushed...
+			Reason: all the input arrays must have same number of dimensions, but the array at index 0 has 3 dimension(s) and the array at index 1 has 2 dimension(s)
+			Error thrown inside 'F:\Code\python\ImageFeatureDetection\webcam.py' on line 155
+
+[22:49:55] FATAL: 	Camera capture operation suddenly crushed...
+			Reason: all the input array dimensions for the concatenation axis must match exactly, but along dimension 2, the array at index 0 has size 3 and the array at index 1 has size 0
+			Error thrown inside 'F:\Code\python\ImageFeatureDetection\webcam.py' on line 155
+
+[22:58:34] FATAL: 	Camera capture operation suddenly crushed...
+			Reason: name 'frame' is not defined
+			Error thrown inside 'F:\Code\python\ImageFeatureDetection\webcam.py' on line 160
+
+[22:58:53] FATAL: 	Camera capture operation suddenly crushed...
+			Reason: name 'cvui' is not defined
+			Error thrown inside 'F:\Code\python\ImageFeatureDetection\webcam.py' on line 160
+
+[22:59:41] FATAL: 	Camera capture operation suddenly crushed...
+			Reason: gui_update() takes 0 positional arguments but 1 was given
+			Error thrown inside 'F:\Code\python\ImageFeatureDetection\webcam.py' on line 160
+
+[23:11:53] FATAL: 	Camera capture operation suddenly crushed...
+			Reason: 'NoneType' object does not support item assignment
+			Error thrown inside 'F:\Code\python\ImageFeatureDetection\webcam.py' on line 164

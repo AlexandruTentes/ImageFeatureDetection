@@ -1,0 +1,4 @@
+
+[23:56:27] ERROR: 	ERROR: Could not open config files at path Configs
+			Reason: [Errno 2] No such file or directory: 'Configs'
+			Error thrown inside 'F:\Code\python\ImageFeatureDetection\configs.py' on line 159
