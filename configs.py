@@ -14,10 +14,20 @@ class Configs(metaclass=singleton.Singleton):
         "teamOneRGBMax": [255, 255, 255],
         "teamTwoRGBMin": [0, 0, 0],
         "teamTwoRGBMax": [255, 255, 255],
-        "RGBMin": [0, 0, 0],
-        "RGBMax": [255, 255, 255],
+        "ballRGBMin": [0, 0, 0],
+        "ballRGBMax": [255, 255, 255],
+        "boundRGBMin": [0, 0, 0],
+        "boundRGBMax": [255, 255, 255],
+        "unboundRGBMin": [0, 0, 0],
+        "unboundRGBMax": [255, 255, 255],
+        "gkRGBMin": [0, 0, 0],
+        "gkRGBMax": [255, 255, 255],
+        "stRGBMin": [0, 0, 0],
+        "stRGBMax": [255, 255, 255],
         "imgWidth": 500,
         "imgHeight": 500,
+        "displayImgWidth": 500,
+        "displayImgHeight": 500,
         "edgeThresholdMin": 80,
         "edgeThresholdMax": 255,
         "edgeBlurKernelSize": 3,
@@ -28,6 +38,7 @@ class Configs(metaclass=singleton.Singleton):
         "imgObjectBoxMaxHeight": -1,
         "displayFrameText": "off",
         "toggleUI": "on"
+        
     }
     
     configs_instance = None
@@ -82,12 +93,20 @@ class Configs(metaclass=singleton.Singleton):
             time.sleep(1)
 
     def update_static_configs(self):
+
         if self.global_data.bound_team == 1:
-            self.config["RGBMin"] = self.config["teamOneRGBMin"]
-            self.config["RGBMax"] = self.config["teamOneRGBMax"]
+            self.config["boundRGBMin"] = self.config["teamOneRGBMin"]
+            self.config["boundRGBMax"] = self.config["teamOneRGBMax"]
+
+            self.config["unboundRGBMin"] = self.config["teamTwoRGBMin"]
+            self.config["unboundRGBMax"] = self.config["teamTwoRGBMax"]
+
         elif self.global_data.bound_team == 2:
-            self.config["RGBMin"] = self.config["teamTwoRGBMin"]
-            self.config["RGBMax"] = self.config["teamTwoRGBMax"]
+            self.config["boundRGBMin"] = self.config["teamTwoRGBMin"]
+            self.config["boundRGBMax"] = self.config["teamTwoRGBMax"]  
+
+            self.config["unboundRGBMin"] = self.config["teamOneRGBMin"]
+            self.config["unboundRGBMax"] = self.config["teamOneRGBMax"]
 
     def read_config_bootup(self, path, dict = None):
         read_config = None

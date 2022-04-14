@@ -37,18 +37,23 @@ class ImageRecognition(metaclass=singleton.Singleton):
         if obj_max_height < 0:
             obj_max_height = sys.maxsize - 1
 
-        blur = cv2.GaussianBlur(frame, (gaussian_size, gaussian_size), gaussian_sigma)
-        color_frame = self.color_detection(blur, lower_color, upper_color)
+        blur = cv2.GaussianBlur(frame, (gaussian_size, gaussian_size), gaussian_sigma) #Masca care imi blureaza imaginea (configs.txt la 
+                                                                                        #"Image processing edge detection thresholding dimensions")
+        color_frame = self.color_detection(blur, lower_color, upper_color) #Functia asta imi detecteaza inca o imagine (frame) din care a scos culorile
+                                                                            #care nu ma intereseaza
         edges = self.edge_detection(color_frame, threshold_min, threshold_max)
         contours, hierarchy = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
+        #Acest for imi impacheteaza obiectul depistat intr-o cuite, fara sa tina cont de rotatia obiectului
         for item in contours:
             moment = cv2.moments(item)
             x, y, w, h = cv2.boundingRect(item)
+             # String containing the co-ordinates.
             
             if w >= obj_min_width and w <= obj_max_width and \
                h >= obj_min_height and h <= obj_max_height:
-                item_list.append([x, y, w, h])
+                item_list.append([x, y, w, h, item])
+
 
         return (blur, color_frame, self.convert_to_multi_channel(edges, frame), item_list)
 

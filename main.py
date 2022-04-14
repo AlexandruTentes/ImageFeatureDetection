@@ -19,9 +19,9 @@ restart_cam = False
 restart_flag = False
 
 def camera():
-    cam.init()
-    cam.capture()
-    cam.close_device(restart_flag)
+    cam.init() #initializeaza camera
+    cam.capture() #captureaza fiecare frame, afisand ceea ce vede camera
+    cam.close_device(restart_flag) #Inchide window-ul si camera daca flag-ul "restart_flag" este TRUE
 
 def main():
     global running
@@ -96,23 +96,29 @@ def main():
                         config.config["RGBMin"] = config.config["teamTwoRGBMin"]
                         config.config["RGBMax"] = config.config["teamTwoRGBMax"]
 
-# Command prompt input thread
+cam = webcam.WebcamCapture(global_data.window_name)
+
+# Command prompt input thread // Cand am un command prompt am nev de un while
+# Thread-ul acesta are rolul de a citi de la tastatura comenzile (PS, nu trebuie oprit decat la iesirea completa din program)
 camera_thread = threading.Thread(target = main, args=())
 camera_thread.daemon = True
 camera_thread.start()
 
-# Read config file at runtime thread
+# Read config file at runtime thread // Citeste si scrie din/in configs.txt (scrie ceea ce modific in UI)
 config_thread = threading.Thread(target = config.read_config_runtime, args=(global_data.config_path,))
 config_thread.daemon = True
 config_thread.start()
 
-cam = webcam.WebcamCapture(global_data.window_name)
 
-while True:
+draw_thread = threading.Thread(target = cam.draw_frame, args=())
+draw_thread.daemon = True
+draw_thread.start()
+
+while True: #Thread-ul principal -> Aici ruleaza programul principal. Se ocupa de preluarea imaginii de la webcam + depistarea culorii
     restart_flag = False
-    restart_cam = False
+    re = False
     cam.thread_running = True
-    camera()
+    camera() #Un constructor de la
 
     if restart_cam == False or \
         global_data.program_running == False:
