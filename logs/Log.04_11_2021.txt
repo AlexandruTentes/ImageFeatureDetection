@@ -1,4 +1,0 @@
-
-[00:57:24] FATAL: 	Could not initialize the webcam capture device...
-			Reason: name 'a' is not defined
-			Error thrown inside 'F:\Code\python\ImageFeatureDetection\webcam.py' on line 54
