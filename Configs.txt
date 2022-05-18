@@ -22,31 +22,23 @@ toggleUI:			on				# enable/disable UI at runtime
 # Image processing color boundaries		
 
 	#Team 1
-teamOneRGBMin: 			106, 128, 201			# The color that the program will attempt to track for team 1
-teamOneRGBMax: 			178, 244, 255
+teamOneRGBMin: 			0, 0, 0			# The color that the program will attempt to track for team 1
+teamOneRGBMax: 			63, 74, 255
 
 	#Team 2
 teamTwoRGBMin: 			0, 0, 0			# The color that the program will attempt to track for team 2
-teamTwoRGBMax: 			167, 37, 0
+teamTwoRGBMax: 			0, 0, 0
 
 	#Ball
 ballRGBMin:				0, 0, 0			#The color that the program will attempt to track for the ball
 ballRGBMax:				0, 0, 0
 
-	#Goalkeeper
-gkRGBMin:				0, 0, 0			#The color that the program will attempt to track for the ball
-gkRGBMax:				0, 0, 0
-
-	#Striker
-stRGBMin:				0, 0, 0			#The color that the program will attempt to track for the ball
-stRGBMax:				0, 0, 0
-
 # Image processing display dimensions (the image resolution)
 
 imgWidth:			640				# The display sizes only affect the images displayed (has a massive performance impact)
 imgHeight:			360
-displayImgWidth:	954				# The display sizes only affect the images displayed (has a massive performance impact)
-displayImgHeight:	523
+displayImgWidth:	686				# The display sizes only affect the images displayed (has a massive performance impact)
+displayImgHeight:	489
 
 # Image processing edge detection thresholding dimensions
 
@@ -58,7 +50,16 @@ edgeBlurKernelSigma:	3				# The sigma of the kernel (this specifies how thick th
 
 # Image objects detected constraints
 	
-imgObjectBoxMinWidth:		10				# The object box sizes determin the amount of boxes the program will use to detect color possitions
+imgObjectBoxMinWidth:		12.5				# The object box sizes determin the amount of boxes the program will use to detect color possitions
 imgObjectBoxMaxWidth:		-1				# -1 means the program will use hard-coded defaults (in this case, infinite max sizes)
-imgObjectBoxMinHeight:		10
+imgObjectBoxMinHeight:		12.5
 imgObjectBoxMaxHeight:		-1
+
+# Team rols
+
+	#Striker color
+teamStrikerRGBMin:		0, 50, 0
+teamStrikerRGBMax:		100, 255, 100
+
+	#Goalkeeper
+teamKeeperRGBMin:		50, 50, 0

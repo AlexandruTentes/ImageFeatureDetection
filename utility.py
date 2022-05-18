@@ -2,6 +2,7 @@ from datetime import datetime
 import inspect
 import time
 import singleton
+import math
 
 class Utility(metaclass=singleton.Singleton):    
     new_fps = 0
@@ -25,6 +26,33 @@ class Utility(metaclass=singleton.Singleton):
         frame_info = inspect.getouterframes(current_info, 2)
         return (frame_info[2][1], frame_info[2][2])
 
+    def dist2D(self, one, two):
+        dx = one[0] - two[0];
+        dy = one[1] - two[1];
+        return math.sqrt(dx*dx + dy*dy);
+
+    def angle3P(self, p1, p2, p3):
+        a = self.dist2D(p3, p1);
+        b = self.dist2D(p3, p2);
+        c = self.dist2D(p1, p2);
+
+        numer = c**2 - a**2 - b**2;
+        denom = -2 * a * b;
+        if denom == 0:
+            denom = 0.000001;
+        rads = math.acos(numer / denom);
+        degs = math.degrees(rads);
+
+        return degs;
+
+    def translateRotation(self, rotation, width, height):
+        if (width < height):
+            rotation = -1 * (rotation - 90)
+        if (rotation > 90):
+            rotation = -1 * (rotation - 180)
+        rotation *= -1
+        return round(rotation)
+    
     def fps_counter(self, flag = False):
         if flag == False:
             self.new_fps = time.time()

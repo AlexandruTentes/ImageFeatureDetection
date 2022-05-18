@@ -1,0 +1,52 @@
+# Window display:
+
+windowMode:			complex				# simple = one camera image processing instance (might have a significant performance impact)
+								# advanced = two instances, showing more detailed image processing steps
+								# complex = four instances, showing most of the image processing steps
+displayFrameText:		on				# displays coresponding texts on each of the window mode frames 
+								# (has a significant performance impact)
+
+
+# Config read script:
+
+toggleConfigRuntimeRead:	off				# enable/disable config file read at runtime 
+								# (the config file input gets updated each second inside the program)
+								# If on, it will be conflicting with the UI implementation
+
+# UI configs:
+
+toggleUI:			on				# enable/disable UI at runtime
+								# If on, it will be conflicting with the config runtime script implementation (make sure to disable that first)
+
+
+# Image processing color boundaries		
+
+	#Team 1
+teamOneRGBMin: 			50, 100, 100			# The color that the program will attempt to track for team 1
+teamOneRGBMax: 			80, 255, 255
+
+	#Team 2
+teamTwoRGBMin: 			200, 200, 0			# The color that the program will attempt to track for team 2
+teamTwoRGBMax: 			255, 255, 150
+
+
+# Image processing display dimensions (the image resolution)
+
+imgWidth:			940				# The display sizes only affect the images displayed (has a massive performance impact)
+imgHeight:			500
+
+
+# Image processing edge detection thresholding dimensions
+
+edgeThresholdMin:		50				# The threshold filters the amount of small/big edges
+edgeThresholdMax:		255
+edgeBlurKernelSize:		21				# The size of the Gaussian kernel (Ex: a 9 x 9 matrix)
+edgeBlurKernelSigma:		11				# The sigma of the kernel (this specifies how thick the radius is)
+								# The thickness decides how much the neighbouring pixels matter towords the result
+
+# Image objects detected constraints
+	
+imgObjectBoxMinWidth:		40				# The object box sizes determin the amount of boxes the program will use to detect color possitions
+imgObjectBoxMaxWidth:		-1				# -1 means the program will use hard-coded defaults (in this case, infinite max sizes)
+imgObjectBoxMinHeight:		40
+imgObjectBoxMaxHeight:		-1

@@ -4,6 +4,9 @@ import singleton
 import sys
 
 class ImageRecognition(metaclass=singleton.Singleton):
+   
+    kernel = np.ones((5,5), np.uint8)
+
     def __init__(self):
         pass
 
@@ -17,8 +20,10 @@ class ImageRecognition(metaclass=singleton.Singleton):
         return img
 
     def edge_detection(self, frame, threshold_min, threshold_max):
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        return cv2.Canny(gray, threshold_min, threshold_max)
+        #mask = cv2.bilateralFilter(frame, 5, 5, 7) 
+        #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(frame,(5,5),0)
+        return cv2.Canny(blur, threshold_min, threshold_max)
 
     def get_image_objects(self, frame, lower_color, upper_color,
                           threshold_min, threshold_max, gaussian_size, gaussian_sigma,
@@ -41,18 +46,20 @@ class ImageRecognition(metaclass=singleton.Singleton):
                                                                                         #"Image processing edge detection thresholding dimensions")
         color_frame = self.color_detection(blur, lower_color, upper_color) #Functia asta imi detecteaza inca o imagine (frame) din care a scos culorile
                                                                             #care nu ma intereseaza
+        color_frame = cv2.erode(color_frame, self.kernel, iterations=1)
+        color_frame = cv2.dilate(color_frame, self.kernel, iterations=1)
         edges = self.edge_detection(color_frame, threshold_min, threshold_max)
-        contours, hierarchy = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        contours, hierarchy = cv2.findContours(edges.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         #Acest for imi impacheteaza obiectul depistat intr-o cuite, fara sa tina cont de rotatia obiectului
         for item in contours:
             moment = cv2.moments(item)
             x, y, w, h = cv2.boundingRect(item)
-             # String containing the co-ordinates.
+            data = [x, y, w, h, item]
             
             if w >= obj_min_width and w <= obj_max_width and \
                h >= obj_min_height and h <= obj_max_height:
-                item_list.append([x, y, w, h, item])
+                item_list.append(data)
 
 
         return (blur, color_frame, self.convert_to_multi_channel(edges, frame), item_list)

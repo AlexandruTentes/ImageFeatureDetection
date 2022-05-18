@@ -7,6 +7,7 @@ import utility
 import configs
 import image_recognition
 import UI
+import math
 
 class WebcamCapture(metaclass=singleton.Singleton):    
     name = ""
@@ -33,6 +34,7 @@ class WebcamCapture(metaclass=singleton.Singleton):
     color_frame_enemy = []
     edges_enemy = []
     objects_enemy = []
+    inv_pi = 1/math.pi
 
     def __init__(self, name = "Camera"):
         self.img_rec = image_recognition.ImageRecognition()
@@ -81,6 +83,20 @@ class WebcamCapture(metaclass=singleton.Singleton):
 
         return 0    
 
+    def max_rgb_filter(self,image):
+        # split the image into its BGR components
+        (B, G, R) = cv2.split(image)
+        # find the maximum pixel intensity values for each
+        # (x, y)-coordinate,, then set all pixel values less
+        # than M to zero
+        M = np.maximum(np.maximum(R, G), B)
+        R[R < M] = 0
+        G[G < M] = 0
+        B[B < M] = 0
+            
+        # merge the channels back together and return the image
+        return cv2.merge([B, G, R])
+
     def capture(self):  #asta e functia care face MAGIA (citeste im frame by frame + proceseaza pentru a extrace obiecte cu o anumita culoare/spectru de culori)
         sanity = True
         fps = 0
@@ -115,9 +131,16 @@ class WebcamCapture(metaclass=singleton.Singleton):
                     
                     # GUI FRAME SIZE
                     gui_frame = np.zeros((len(frame), len(frame[0]), 3), np.uint8)
+                    alpha = 1 # Contrast control (1.0-3.0)
+                    beta = 0 # Brightness control (0-100)
+                    frame = cv2.convertScaleAbs(frame, alpha=alpha, beta=beta)
+
+                    #frame_filter = self.max_rgb_filter(frame)               #Filtrul care detecteaza valoarea maxima RGB si o "transmite" celorlalti pixeli de aceeasi culoare
+                    frame_filter = frame
+                    #print(frame)
 
                     #My team color
-                    blur, color_frame, edges, objects = self.img_rec.get_image_objects(frame,
+                    blur, color_frame, edges, objects = self.img_rec.get_image_objects(frame_filter,
                         self.config.config["boundRGBMin"], self.config.config["boundRGBMax"],
                         self.config.config["edgeThresholdMin"], self.config.config["edgeThresholdMax"],
                         self.config.config["edgeBlurKernelSize"], self.config.config["edgeBlurKernelSigma"],
@@ -125,7 +148,7 @@ class WebcamCapture(metaclass=singleton.Singleton):
                         self.config.config["imgObjectBoxMinHeight"], self.config.config["imgObjectBoxMaxHeight"])
 
                     #Ball color
-                    blur_ball, color_frame_ball, edges_ball, objects_ball = self.img_rec.get_image_objects(frame,
+                    blur_ball, color_frame_ball, edges_ball, objects_ball = self.img_rec.get_image_objects(frame_filter,
                         self.config.config["ballRGBMin"], self.config.config["ballRGBMax"],
                         self.config.config["edgeThresholdMin"], self.config.config["edgeThresholdMax"],
                         self.config.config["edgeBlurKernelSize"], self.config.config["edgeBlurKernelSigma"],
@@ -133,7 +156,7 @@ class WebcamCapture(metaclass=singleton.Singleton):
                         self.config.config["imgObjectBoxMinHeight"], self.config.config["imgObjectBoxMaxHeight"])
 
                     #Enemy team color
-                    blur_enemy, color_frame_enemy, edges_enemy, objects_enemy = self.img_rec.get_image_objects(frame,
+                    blur_enemy, color_frame_enemy, edges_enemy, objects_enemy = self.img_rec.get_image_objects(frame_filter,
                         self.config.config["unboundRGBMin"], self.config.config["unboundRGBMax"],
                         self.config.config["edgeThresholdMin"], self.config.config["edgeThresholdMax"],
                         self.config.config["edgeBlurKernelSize"], self.config.config["edgeBlurKernelSigma"],
@@ -141,22 +164,6 @@ class WebcamCapture(metaclass=singleton.Singleton):
                         self.config.config["imgObjectBoxMinHeight"], self.config.config["imgObjectBoxMaxHeight"])
 
                     #TO DO - Role color (GoalKeeper / STriker)
-
-                    #GoalKeeper color
-                    blur_goalkeeper, color_frame_goalkeeper, edges_goalkeeper, objects_goalkeeper = self.img_rec.get_image_objects(frame,
-                        self.config.config["unboundRGBMin"], self.config.config["unboundRGBMax"],
-                        self.config.config["edgeThresholdMin"], self.config.config["edgeThresholdMax"],
-                        self.config.config["edgeBlurKernelSize"], self.config.config["edgeBlurKernelSigma"],
-                        self.config.config["imgObjectBoxMinWidth"], self.config.config["imgObjectBoxMaxWidth"],
-                        self.config.config["imgObjectBoxMinHeight"], self.config.config["imgObjectBoxMaxHeight"])
-                    
-                    #Striker color
-                    blur_striker, color_frame_striker, edges_striker, objects_striker = self.img_rec.get_image_objects(frame,
-                        self.config.config["unboundRGBMin"], self.config.config["unboundRGBMax"],
-                        self.config.config["edgeThresholdMin"], self.config.config["edgeThresholdMax"],
-                        self.config.config["edgeBlurKernelSize"], self.config.config["edgeBlurKernelSigma"],
-                        self.config.config["imgObjectBoxMinWidth"], self.config.config["imgObjectBoxMaxWidth"],
-                        self.config.config["imgObjectBoxMinHeight"], self.config.config["imgObjectBoxMaxHeight"])
 
                     # Display image based text only once
                     if self.config.config["displayFrameText"] == "on":
@@ -242,9 +249,104 @@ class WebcamCapture(metaclass=singleton.Singleton):
                     cv2.putText(self.frame, string, (item[0], item[1]), font, 0.5, (0, 255, 0)) # text on remaining co-ordinates.
                     i=i+1
                     rect = cv2.minAreaRect(item[4])
-                    box = cv2.boxPoints(rect)
+                    box = cv2.boxPoints(rect) #Aici am coordonatele box-ului pe care il deseneaza programul cand gaseste culoare
                     box = np.int0(box)
+                    angle = 0
+                    width_obj = rect[1][0]
+                    height_obj = rect[1][1]
+                    min_size = min(width_obj, height_obj)
+                    """
+                    root = box[0]
 
+                    end = None
+                    one = box[-1]
+                    two = box[1]
+
+                    if self.util.dist2D(one, root) > self.util.dist2D(two, root):
+                        end = one
+                    else:
+                        end = two
+
+                    left_point = None
+                    right_point = None
+
+                    if end[0] < root[0]:
+                        left_point = end
+                        right_point = root
+                    else:
+                        left_point = root
+                        right_point = end
+
+                    offshoot = [left_point[0] + 100, left_point[1]]
+                    angle = self.util.angle3P(right_point, offshoot, left_point)
+
+                    """
+
+                    center = rect[0]
+                    angle = rect[2]
+
+                    if width_obj < height_obj:
+                        angle = 90 - rect[2]
+                    else:
+                        angle = -rect[2]
+
+                    angle = -angle 
+                    
+                    #Desenez orientarea robotului
+                    #(rect_x, rect_y), (width_obj, height_obj), angle = rect                    
+                    start_point_orientation = (int(item[0] + item[2] * 0.5), int(item[1] + item[3] * 0.5))
+                    #self.frame = cv2.line(self.frame, start_point_orientation, (box[0][0] + box[1][0] + box[2][0] + box[3][0], box[0][1] + box[1][1] + box[2][1] + box[3][1]), (0,255,255), 5)
+
+                    end_point_orientation_north = (int(item[0] + item[2] * 0.5) , abs(int(item[1] + item[3] * 0.5) - int(min_size * 0.75)))
+                    end_point_orientation_south = (int(item[0] + item[2] * 0.5) , abs(int(item[1] + item[3] * 0.5) + int(min_size * 0.75)))
+                    
+                    x_p_north = end_point_orientation_north[0] - start_point_orientation[0]
+                    x_p_south = end_point_orientation_south[0] - start_point_orientation[0]
+
+                    y_p_north = end_point_orientation_north[1] - start_point_orientation[1]
+                    y_p_south = end_point_orientation_south[1] - start_point_orientation[1]
+
+                    x_rotation_north = np.cos(np.radians(angle))*x_p_north - np.sin(np.radians(angle))*y_p_north
+                    x_rotation_south = np.cos(np.radians(angle))*x_p_south - np.sin(np.radians(angle))*y_p_south
+
+                    y_rotation_north = np.sin(np.radians(angle))*x_p_north + np.cos(np.radians(angle))*y_p_north
+                    y_rotation_south = np.sin(np.radians(angle))*x_p_south + np.cos(np.radians(angle))*y_p_south
+
+                    end_point_orientation_north = (int(start_point_orientation[0]+x_rotation_north), int(start_point_orientation[1]+y_rotation_north))
+                    end_point_orientation_south = (int(start_point_orientation[0]+x_rotation_south), int(start_point_orientation[1]+y_rotation_south))
+
+
+                    #self.frame = cv2.line(self.frame, start_point_orientation, end_point_orientation_north, (0,255,0), 2)
+                    #self.frame = cv2.line(self.frame, start_point_orientation, end_point_orientation_east, (0,255,0), 2)
+                    #self.frame = cv2.line(self.frame, start_point_orientation, end_point_orientation_south, (0,255,0), 2)
+                    #self.frame = cv2.line(self.frame, start_point_orientation, end_point_orientation_west, (0,255,0), 2)
+                    
+                    #print(end_point_orientation_north, end_point_orientation_south)
+                    
+                    north_color = self.frame[end_point_orientation_north[1] % self.config.config["imgHeight"],end_point_orientation_north[0] % self.config.config["imgWidth"]]
+                    south_color = self.frame[end_point_orientation_south[1] % self.config.config["imgHeight"],end_point_orientation_south[0] % self.config.config["imgWidth"]]
+
+                    north_color = (int(north_color[0]), int(north_color[1]), int(north_color[2]))
+                    south_color = (int(south_color[0]), int(south_color[1]), int(south_color[2]))
+
+                    robot_role_color = (255, 255, 255)
+                    robot_direction = start_point_orientation
+
+                    if north_color[0] >= self.config.config["teamStrikerRGBMin"][2] and north_color[0] <= self.config.config["teamStrikerRGBMax"][2] and \
+                       north_color[1] >= self.config.config["teamStrikerRGBMin"][1] and north_color[1] <= self.config.config["teamStrikerRGBMax"][1] and \
+                       north_color[2] >= self.config.config["teamStrikerRGBMin"][0] and north_color[2] <= self.config.config["teamStrikerRGBMax"][0]:
+                        robot_role_color = north_color
+                        robot_direction = end_point_orientation_north
+                        
+                    elif south_color[0] >= self.config.config["teamStrikerRGBMin"][2] and south_color[0] <= self.config.config["teamStrikerRGBMax"][2] and \
+                       south_color[1] >= self.config.config["teamStrikerRGBMin"][1] and south_color[1] <= self.config.config["teamStrikerRGBMax"][1] and \
+                       south_color[2] >= self.config.config["teamStrikerRGBMin"][0] and south_color[2] <= self.config.config["teamStrikerRGBMax"][0]:
+                        robot_role_color = south_color
+                        robot_direction = end_point_orientation_south
+
+                    #print(north_color, south_color)
+                    self.frame = cv2.line(self.frame, start_point_orientation, robot_direction, robot_role_color, 1)
+                        
                     cv2.drawContours(self.frame,[box],0,(0,0,255),2)
                    # self.frame = cv2.rectangle(self.frame, start, end, (self.config.config["boundRGBMin"][2],
                   #      self.config.config["boundRGBMin"][1], self.config.config["boundRGBMin"][0]), 2)
@@ -275,6 +377,7 @@ class WebcamCapture(metaclass=singleton.Singleton):
                     output_frame = np.vstack((tmp_first_row_frame, tmp_second_row_frame))
                     cv2.line(output_frame, (self.config.config["displayImgWidth"] - 1, 0),
                             (self.config.config["displayImgWidth"] - 1, self.config.config["displayImgHeight"] * 2), (100, 22, 150), 2)
+
                 cv2.imshow(self.name, output_frame)  
         
 

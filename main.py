@@ -136,3 +136,8 @@ print("\tClearing the memory:\n")
 cam.clear()
 logger.clear()
 config.clear()
+
+
+#Dist camera - masa : 181 (deci range 180-182)
+#Lat stg :19-20
+#Lat dr : 25
