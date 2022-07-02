@@ -30,24 +30,17 @@ class ImageRecognition(metaclass=singleton.Singleton):
                           obj_min_width, obj_max_width, obj_min_height, obj_max_height):
         item_list = []
 
-        if obj_min_width < 0:
-            obj_min_width = 0
-
-        if obj_max_width < 0:
-            obj_max_width = sys.maxsize - 1
-
-        if obj_min_height < 0:
-            obj_min_height = 0
-
-        if obj_max_height < 0:
-            obj_max_height = sys.maxsize - 1
+        obj_min_width = (obj_min_width >= 0) * obj_min_width
+        obj_min_height = (obj_min_height >= 0) * obj_min_height
+        obj_max_width = (obj_max_width < 0) * (sys.maxsize - 1) + (obj_max_width >= 0) * obj_max_width
+        obj_max_height = (obj_max_height < 0) * (sys.maxsize - 1) + (obj_max_height >= 0) * obj_max_height
 
         blur = cv2.GaussianBlur(frame, (gaussian_size, gaussian_size), gaussian_sigma) #Masca care imi blureaza imaginea (configs.txt la 
                                                                                         #"Image processing edge detection thresholding dimensions")
         color_frame = self.color_detection(blur, lower_color, upper_color) #Functia asta imi detecteaza inca o imagine (frame) din care a scos culorile
                                                                             #care nu ma intereseaza
-        color_frame = cv2.erode(color_frame, self.kernel, iterations=1)
-        color_frame = cv2.dilate(color_frame, self.kernel, iterations=1)
+        color_frame = cv2.erode(color_frame, self.kernel, iterations=3)
+        color_frame = cv2.dilate(color_frame, self.kernel, iterations=3)
         edges = self.edge_detection(color_frame, threshold_min, threshold_max)
         contours, hierarchy = cv2.findContours(edges.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -60,7 +53,6 @@ class ImageRecognition(metaclass=singleton.Singleton):
             if w >= obj_min_width and w <= obj_max_width and \
                h >= obj_min_height and h <= obj_max_height:
                 item_list.append(data)
-
 
         return (blur, color_frame, self.convert_to_multi_channel(edges, frame), item_list)
 

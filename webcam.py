@@ -126,8 +126,8 @@ class WebcamCapture(metaclass=singleton.Singleton):
                     if aux_fps != "":
                         fps = aux_fps
 
-                    width_resize = len(frame[0]) #len(frame[0]) -> width   #self.config.config["imgWidth"] 
-                    height_resize = len(frame) #len(frame) -> height   #self.config.config["imgHeight"]
+                    #width_resize = len(frame[0]) #len(frame[0]) -> width   #self.config.config["imgWidth"] 
+                    #height_resize = len(frame) #len(frame) -> height   #self.config.config["imgHeight"]
                     
                     # GUI FRAME SIZE
                     gui_frame = np.zeros((len(frame), len(frame[0]), 3), np.uint8)
@@ -167,9 +167,6 @@ class WebcamCapture(metaclass=singleton.Singleton):
 
                     # Display image based text only once
                     if self.config.config["displayFrameText"] == "on":
-                        cv2.putText(blur, "NOISE SMOOTHING", (7, 40),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 100, 50), 2, cv2.LINE_AA)
-
                         cv2.putText(color_frame, "COLOR DETECTION", (7, 40),
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 100, 50), 2, cv2.LINE_AA)
 
@@ -181,7 +178,7 @@ class WebcamCapture(metaclass=singleton.Singleton):
                         cv2.FONT_HERSHEY_SIMPLEX, 3, (100, 255, 0), 3, cv2.LINE_AA)
 
                     self.frame = frame
-                    self.color_frame = cv2.bitwise_or(color_frame, color_frame_ball)
+                    self.color_frame = color_frame
                     self.edges = edges
                     self.objects = objects
                     self.gui_frame = gui_frame
@@ -231,23 +228,35 @@ class WebcamCapture(metaclass=singleton.Singleton):
                 #color_frame_ball -> depistare culoare minge (portocaliu)
                 #color_frame_enemy -> depistare culoare echipa adversa 
                 
-                self.color_frame = cv2.bitwise_or(self.color_frame, self.color_frame_enemy)
-                self.color_frame = cv2.bitwise_or(self.color_frame, self.color_frame_ball)
+                draw_color_frame = cv2.bitwise_or(self.color_frame, self.color_frame_enemy)
+                draw_color_frame = cv2.bitwise_or(draw_color_frame, self.color_frame_ball)
                 self.edges = cv2.bitwise_or(self.edges, self.edges_enemy)
                 self.edges = cv2.bitwise_or(self.edges, self.edges_ball)
-                self.objects = self.objects + self.objects_ball + self.objects_enemy 
+                objects = self.objects + self.objects_ball + self.objects_enemy 
+                frame = self.frame.copy()
 
                 #Aici printez coordonata centrului fiecarui box/contur/obiect depistat, pana la i=i+1
                 font = cv2.FONT_HERSHEY_COMPLEX
-                i=0
+
+                for item in objects:
+                    #start = (item[0], item[1])
+                    #end = (item[2] + item[0], item[3] + item[1])
+                    #x = int(item[0] + item[2] * 0.5)
+                    #y = int(item[1] + item[3] * 0.5)
+                    #string = str(x) + " " + str(y) 
+                    #cv2.putText(frame, string, (item[0], item[1]), font, 0.5, (0, 255, 0)) # text on remaining co-ordinates.
+                    tmp_frame = self.frame.copy()
+                    rect = cv2.minAreaRect(item[4])
+                    box = cv2.boxPoints(rect) #Aici am coordonatele box-ului pe care il deseneaza programul cand gaseste culoare
+                    box = np.int0(box)
+                    start_point_orientation = (int(item[0] + item[2] * 0.5), int(item[1] + item[3] * 0.5))
+                    center_color = tmp_frame[start_point_orientation[1] % self.config.config["imgHeight"],start_point_orientation[0] % self.config.config["imgWidth"]]
+                    center_color = (int(center_color[0]), int(center_color[1]), int(center_color[2]))
+
+                    cv2.drawContours(frame,[box],0,center_color,2)
+
                 for item in self.objects:
-                    start = (item[0], item[1])
-                    end = (item[2] + item[0], item[3] + item[1])
-                    x = int(item[0] + item[2] * 0.5)
-                    y = int(item[1] + item[3] * 0.5)
-                    string = str(x) + " " + str(y) 
-                    cv2.putText(self.frame, string, (item[0], item[1]), font, 0.5, (0, 255, 0)) # text on remaining co-ordinates.
-                    i=i+1
+                    tmp_frame = self.frame.copy()
                     rect = cv2.minAreaRect(item[4])
                     box = cv2.boxPoints(rect) #Aici am coordonatele box-ului pe care il deseneaza programul cand gaseste culoare
                     box = np.int0(box)
@@ -255,33 +264,6 @@ class WebcamCapture(metaclass=singleton.Singleton):
                     width_obj = rect[1][0]
                     height_obj = rect[1][1]
                     min_size = min(width_obj, height_obj)
-                    """
-                    root = box[0]
-
-                    end = None
-                    one = box[-1]
-                    two = box[1]
-
-                    if self.util.dist2D(one, root) > self.util.dist2D(two, root):
-                        end = one
-                    else:
-                        end = two
-
-                    left_point = None
-                    right_point = None
-
-                    if end[0] < root[0]:
-                        left_point = end
-                        right_point = root
-                    else:
-                        left_point = root
-                        right_point = end
-
-                    offshoot = [left_point[0] + 100, left_point[1]]
-                    angle = self.util.angle3P(right_point, offshoot, left_point)
-
-                    """
-
                     center = rect[0]
                     angle = rect[2]
 
@@ -323,14 +305,18 @@ class WebcamCapture(metaclass=singleton.Singleton):
                     
                     #print(end_point_orientation_north, end_point_orientation_south)
                     
-                    north_color = self.frame[end_point_orientation_north[1] % self.config.config["imgHeight"],end_point_orientation_north[0] % self.config.config["imgWidth"]]
-                    south_color = self.frame[end_point_orientation_south[1] % self.config.config["imgHeight"],end_point_orientation_south[0] % self.config.config["imgWidth"]]
+                    north_color = tmp_frame[end_point_orientation_north[1] % self.config.config["imgHeight"],end_point_orientation_north[0] % self.config.config["imgWidth"]]
+                    south_color = tmp_frame[end_point_orientation_south[1] % self.config.config["imgHeight"],end_point_orientation_south[0] % self.config.config["imgWidth"]]
+                    center_color = tmp_frame[start_point_orientation[1] % self.config.config["imgHeight"],start_point_orientation[0] % self.config.config["imgWidth"]]
 
                     north_color = (int(north_color[0]), int(north_color[1]), int(north_color[2]))
                     south_color = (int(south_color[0]), int(south_color[1]), int(south_color[2]))
+                    center_color = (int(center_color[0]), int(center_color[1]), int(center_color[2]))
 
                     robot_role_color = (255, 255, 255)
                     robot_direction = start_point_orientation
+
+                   
 
                     if north_color[0] >= self.config.config["teamStrikerRGBMin"][2] and north_color[0] <= self.config.config["teamStrikerRGBMax"][2] and \
                        north_color[1] >= self.config.config["teamStrikerRGBMin"][1] and north_color[1] <= self.config.config["teamStrikerRGBMax"][1] and \
@@ -344,10 +330,21 @@ class WebcamCapture(metaclass=singleton.Singleton):
                         robot_role_color = south_color
                         robot_direction = end_point_orientation_south
 
-                    #print(north_color, south_color)
-                    self.frame = cv2.line(self.frame, start_point_orientation, robot_direction, robot_role_color, 1)
+                    elif north_color[0] >= self.config.config["teamKeeperRGBMin"][2] and north_color[0] <= self.config.config["teamKeeperRGBMax"][2] and \
+                       north_color[1] >= self.config.config["teamKeeperRGBMin"][1] and north_color[1] <= self.config.config["teamKeeperRGBMax"][1] and \
+                       north_color[2] >= self.config.config["teamKeeperRGBMin"][0] and north_color[2] <= self.config.config["teamKeeperRGBMax"][0]:
+                        robot_role_color = north_color
+                        robot_direction = end_point_orientation_north
                         
-                    cv2.drawContours(self.frame,[box],0,(0,0,255),2)
+                    elif south_color[0] >= self.config.config["teamKeeperRGBMin"][2] and south_color[0] <= self.config.config["teamKeeperRGBMax"][2] and \
+                       south_color[1] >= self.config.config["teamKeeperRGBMin"][1] and south_color[1] <= self.config.config["teamKeeperRGBMax"][1] and \
+                       south_color[2] >= self.config.config["teamKeeperRGBMin"][0] and south_color[2] <= self.config.config["teamKeeperRGBMax"][0]:
+                        robot_role_color = south_color
+                        robot_direction = end_point_orientation_south
+
+                    frame = cv2.line(frame, start_point_orientation, robot_direction, robot_role_color, 5)
+                        
+                    
                    # self.frame = cv2.rectangle(self.frame, start, end, (self.config.config["boundRGBMin"][2],
                   #      self.config.config["boundRGBMin"][1], self.config.config["boundRGBMin"][0]), 2)
 
@@ -355,14 +352,19 @@ class WebcamCapture(metaclass=singleton.Singleton):
 
                 if self.config.config["windowMode"] == "advanced":
         
-                    frame = cv2.resize(self.frame, (self.config.config["displayImgWidth"], self.config.config["displayImgHeight"]))
-                    color_frame = cv2.resize(self.color_frame, (self.config.config["displayImgWidth"], self.config.config["displayImgHeight"]))
-                    output_frame = np.hstack((frame, color_frame))
+                    my_frame = cv2.resize(frame, (self.config.config["displayImgWidth"], self.config.config["displayImgHeight"]))
+                    gui_frame = cv2.resize(self.gui_frame, (self.config.config["displayImgWidth"], self.config.config["displayImgHeight"]))
+
+                    self.ui.update(gui_frame)
+                    self.ui.gui(gui_frame)
+                    self.ui.update_context()
+                    
+                    output_frame = np.hstack((my_frame, gui_frame))
                     cv2.line(output_frame, (self.config.config["displayImgWidth"] - 1, 0),
                             (self.config.config["displayImgWidth"] - 1, self.config.config["displayImgHeight"] * 2), (100, 22, 150), 2)
                 else: 
-                    frame = cv2.resize(self.frame, (self.config.config["displayImgWidth"], self.config.config["displayImgHeight"]))
-                    color_frame = cv2.resize(self.color_frame, (self.config.config["displayImgWidth"], self.config.config["displayImgHeight"]))
+                    my_frame = cv2.resize(frame, (self.config.config["displayImgWidth"], self.config.config["displayImgHeight"]))
+                    color_frame = cv2.resize(draw_color_frame, (self.config.config["displayImgWidth"], self.config.config["displayImgHeight"]))
                     edges = cv2.resize(self.edges, (self.config.config["displayImgWidth"], self.config.config["displayImgHeight"]))
                     gui_frame = cv2.resize(self.gui_frame, (self.config.config["displayImgWidth"], self.config.config["displayImgHeight"]))
 
@@ -370,7 +372,7 @@ class WebcamCapture(metaclass=singleton.Singleton):
                     self.ui.gui(gui_frame)
                     self.ui.update_context()
                     
-                    tmp_first_row_frame = np.hstack((gui_frame, frame)) #Combina cele 2 fereste intr-una mai lunguiata, pe orizontal
+                    tmp_first_row_frame = np.hstack((gui_frame, my_frame)) #Combina cele 2 fereste intr-una mai lunguiata, pe orizontal
                     tmp_second_row_frame = np.hstack((color_frame, edges))
                     cv2.line(tmp_second_row_frame, (0, 0),
                             (self.config.config["displayImgWidth"] * 2, 0), (100, 22, 150), 2)
@@ -378,7 +380,8 @@ class WebcamCapture(metaclass=singleton.Singleton):
                     cv2.line(output_frame, (self.config.config["displayImgWidth"] - 1, 0),
                             (self.config.config["displayImgWidth"] - 1, self.config.config["displayImgHeight"] * 2), (100, 22, 150), 2)
 
-                cv2.imshow(self.name, output_frame)  
+
+                cv2.imshow(self.name, output_frame)
         
 
     def close_device(self, window = True):  #functia close_device inchide camera si/sau fereastra(window-ul)

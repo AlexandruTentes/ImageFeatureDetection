@@ -60,12 +60,12 @@ class UI(metaclass=singleton.Singleton):
         self.second_team_color_G_max_value = [self.config.config["teamTwoRGBMax"][1]]
         self.second_team_color_B_max_value = [self.config.config["teamTwoRGBMax"][2]]
 
-        self.ball_color_R_min_value = [self.config.config["teamTwoRGBMin"][0]]
-        self.ball_color_G_min_value = [self.config.config["teamTwoRGBMin"][1]]
-        self.ball_color_B_min_value = [self.config.config["teamTwoRGBMin"][2]]
-        self.ball_color_R_max_value = [self.config.config["teamTwoRGBMax"][0]]
-        self.ball_color_G_max_value = [self.config.config["teamTwoRGBMax"][1]]
-        self.ball_color_B_max_value = [self.config.config["teamTwoRGBMax"][2]]
+        self.ball_color_R_min_value = [self.config.config["ballRGBMin"][0]]
+        self.ball_color_G_min_value = [self.config.config["ballRGBMin"][1]]
+        self.ball_color_B_min_value = [self.config.config["ballRGBMin"][2]]
+        self.ball_color_R_max_value = [self.config.config["ballRGBMax"][0]]
+        self.ball_color_G_max_value = [self.config.config["ballRGBMax"][1]]
+        self.ball_color_B_max_value = [self.config.config["ballRGBMax"][2]]
 
         if self.config.config["displayFrameText"] == "on":
             self.display_frame_text = "ON"

@@ -23,21 +23,21 @@ toggleUI:			on				# enable/disable UI at runtime
 
 	#Team 1
 teamOneRGBMin: 			0, 0, 0			# The color that the program will attempt to track for team 1
-teamOneRGBMax: 			63, 74, 255
+teamOneRGBMax: 			124, 54, 156
 
 	#Team 2
 teamTwoRGBMin: 			0, 0, 0			# The color that the program will attempt to track for team 2
-teamTwoRGBMax: 			0, 0, 0
+teamTwoRGBMax: 			155, 164, 130
 
 	#Ball
 ballRGBMin:				0, 0, 0			#The color that the program will attempt to track for the ball
-ballRGBMax:				0, 0, 0
+ballRGBMax:				155, 164, 130
 
 # Image processing display dimensions (the image resolution)
 
 imgWidth:			640				# The display sizes only affect the images displayed (has a massive performance impact)
 imgHeight:			360
-displayImgWidth:	686				# The display sizes only affect the images displayed (has a massive performance impact)
+displayImgWidth:	780				# The display sizes only affect the images displayed (has a massive performance impact)
 displayImgHeight:	489
 
 # Image processing edge detection thresholding dimensions
@@ -63,3 +63,4 @@ teamStrikerRGBMax:		100, 255, 100
 
 	#Goalkeeper
 teamKeeperRGBMin:		50, 50, 0
+teamKeeperRGBMax:		255, 255, 100
